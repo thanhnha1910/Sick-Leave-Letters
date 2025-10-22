@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sick Leave Scanner</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+        min-height: 100vh;
+        padding: 2rem;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .header p {
+        opacity: 0.9;
+      }
+
+      .content {
+        padding: 2rem;
+      }
+
+      .config-section {
+        background: #ecf7ff;
+        border: 1px solid #d4e9ff;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .config-section h3 {
+        color: #3498db;
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+      }
+
+      .config-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .config-item label {
+        font-weight: 600;
+        color: #333;
+        min-width: 120px;
+      }
+
+      .config-item input[type="url"] {
+        flex: 1;
+        min-width: 300px;
+        padding: 0.75rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        transition: border-color 0.3s ease;
+      }
+
+      .config-item input[type="url"]:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+      }
+
+      .btn-test {
+        background: #2ecc71;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .btn-test:hover {
+        background: #27ae60;
+        transform: translateY(-1px);
+      }
+
+      .btn-test:disabled {
+        background: #95a5a6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .upload-section {
+        border: 3px dashed #3498db;
+        border-radius: 15px;
+        padding: 3rem;
+        text-align: center;
+        background: #ecf7ff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 2rem;
+      }
+
+      .upload-section:hover {
+        background: #d4e9ff;
+        border-color: #2c3e50;
+      }
+
+      .upload-section.dragover {
+        background: #c4e0ff;
+        border-color: #2c3e50;
+        transform: scale(1.02);
+      }
+
+      #fileInput {
+        display: none;
+      }
+
+      .upload-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+      }
+
+      .selected-files {
+        margin: 2rem 0;
+      }
+
+      .file-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .file-item {
+        position: relative;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+        background: white;
+      }
+
+      .file-item img {
+        width: 100%;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 5px;
+        margin-bottom: 0.5rem;
+      }
+
+      .file-item .filename {
+        font-size: 0.8rem;
+        color: #666;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .file-item .remove {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #ff4757;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin: 2rem 0;
+      }
+
+      button {
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .btn-process {
+        background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+        color: white;
+      }
+
+      .btn-process:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+      }
+
+      .btn-process:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .btn-clear {
+        background: #f1f1f1;
+        color: #333;
+      }
+
+      .btn-clear:hover {
+        background: #e0e0e0;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+      }
+
+      .loading.active {
+        display: block;
+      }
+
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .results {
+        display: none;
+        margin-top: 2rem;
+      }
+
+      .results.active {
+        display: block;
+      }
+
+      .results h2 {
+        color: #3498db;
+        margin-bottom: 1rem;
+      }
+
+      .stats {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .stat-card {
+        flex: 1;
+        background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 10px;
+        text-align: center;
+      }
+
+      .stat-card .value {
+        font-size: 2rem;
+        font-weight: bold;
+      }
+
+      .stat-card .label {
+        opacity: 0.9;
+        margin-top: 0.5rem;
+      }
+
+      .results-table {
+        overflow-x: auto;
+        margin-top: 1rem;
+        border-radius: 10px;
+        border: 1px solid #e0e0e0;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+      }
+
+      th {
+        background: #3498db;
+        color: white;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+
+      td {
+        padding: 0.75rem;
+        border-bottom: 1px solid #e0e0e0;
+        font-size: 0.85rem;
+      }
+
+      tr:hover {
+        background: #ecf7ff;
+      }
+
+      .download-btn {
+        background: #2ecc71;
+        color: white;
+        margin-top: 1rem;
+      }
+
+      .download-btn:hover {
+        background: #27ae60;
+      }
+
+      .error {
+        background: #ff4757;
+        color: white;
+        padding: 1rem;
+        border-radius: 10px;
+        margin: 1rem 0;
+        display: none;
+      }
+
+      .error.active {
+        display: block;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .stats {
+          flex-direction: column;
+        }
+
+        table {
+          font-size: 0.75rem;
+        }
+
+        th,
+        td {
+          padding: 0.5rem;
+        }
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🏥 Sick Leave Scanner</h1>
+        <p>Upload sick leave certificates to extract data automatically</p>
+      </div>
+
+      <div class="content">
+        <!-- Configuration Section -->
+        <div class="config-section">
+          <h3>⚙️ Configuration</h3>
+          <div class="config-item">
+            <label for="webhookUrl">Webhook URL:</label>
+            <input
+              type="url"
+              id="webhookUrl"
+              placeholder="Enter your n8n webhook URL"
+              value="https://nhaquachne.app.n8n.cloud/webhook/sick-leave-upload"
+            />
+            <button class="btn-test" id="testBtn">🔗 Test Connection</button>
+          </div>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="upload-section" id="uploadZone">
+          <div class="upload-icon">📤</div>
+          <h3>Click to upload or drag and drop</h3>
+          <p>Supports: JPG, PNG, PDF (multiple files allowed)</p>
+          <input type="file" id="fileInput" accept="image/*,.pdf" multiple />
+        </div>
+
+        <!-- Selected Files -->
+        <div class="selected-files" id="selectedFiles" style="display: none">
+          <h3>🔎 Selected Files (<span id="fileCount">0</span>)</h3>
+          <div class="file-list" id="fileList"></div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="button-group">
+          <button class="btn-process" id="processBtn" disabled>
+            🚀 Process Documents
+          </button>
+          <button class="btn-clear" id="clearBtn">🗑️ Clear All</button>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error" id="errorMsg"></div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          <p>Processing your sick leave certificates...</p>
+          <p id="loadingDetails">
+            This may take several minutes (up to 15 minutes)
+          </p>
+        </div>
+
+        <!-- Results -->
+        <div class="results" id="results">
+          <h2>✅ Extraction Results</h2>
+
+          <div class="stats">
+            <div class="stat-card">
+              <div class="value" id="statTime">0s</div>
+              <div class="label">Processing Time</div>
+            </div>
+            <div class="stat-card">
+              <div class="value" id="statRecords">0</div>
+              <div class="label">Records Extracted</div>
+            </div>
+            <div class="stat-card">
+              <div class="value" id="statDays">0</div>
+              <div class="label">Total Sick Days</div>
+            </div>
+          </div>
+
+          <div class="results-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Patient Name</th>
+                  <th>Certificate Date</th>
+                  <th>Hospital/Clinic</th>
+                  <th>Department</th>
+                  <th>Diagnosis</th>
+                  <th>Sick Leave From</th>
+                  <th>Sick Leave To</th>
+                  <th>Days</th>
+                  <th>Doctor Name</th>
+                  <th>Case Number</th>
+                </tr>
+              </thead>
+              <tbody id="resultsBody"></tbody>
+            </table>
+          </div>
+
+          <button class="download-btn" id="downloadBtn" style="display: none">
+            ⬇️ Download Excel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let selectedFiles = [];
+      let excelBlob = null;
+
+      const REQUEST_TIMEOUT_MS = 900000; // 15 minutes
+
+      async function fetchWithTimeout(
+        resource,
+        options = {},
+        timeoutMs = REQUEST_TIMEOUT_MS
+      ) {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeoutMs);
+        const { signal } = controller;
+        try {
+          const response = await fetch(resource, { ...options, signal });
+          return response;
+        } finally {
+          clearTimeout(id);
+        }
+      }
+
+      // DOM Elements
+      const uploadZone = document.getElementById("uploadZone");
+      const fileInput = document.getElementById("fileInput");
+      const selectedFilesDiv = document.getElementById("selectedFiles");
+      const fileList = document.getElementById("fileList");
+      const fileCount = document.getElementById("fileCount");
+      const processBtn = document.getElementById("processBtn");
+      const clearBtn = document.getElementById("clearBtn");
+      const loading = document.getElementById("loading");
+      const results = document.getElementById("results");
+      const errorMsg = document.getElementById("errorMsg");
+      const resultsBody = document.getElementById("resultsBody");
+      const statTime = document.getElementById("statTime");
+      const statRecords = document.getElementById("statRecords");
+      const statDays = document.getElementById("statDays");
+      const downloadBtn = document.getElementById("downloadBtn");
+      const webhookUrlInput = document.getElementById("webhookUrl");
+      const testBtn = document.getElementById("testBtn");
+
+      // Load saved webhook URL from localStorage
+      const savedWebhookUrl = localStorage.getItem("sickLeaveWebhookUrl");
+      if (savedWebhookUrl) {
+        webhookUrlInput.value = savedWebhookUrl;
+      }
+
+      // Save webhook URL to localStorage when changed
+      webhookUrlInput.addEventListener("input", () => {
+        localStorage.setItem("sickLeaveWebhookUrl", webhookUrlInput.value);
+      });
+
+      // Click to upload
+      uploadZone.addEventListener("click", () => fileInput.click());
+
+      // File selection
+      fileInput.addEventListener("change", (e) => {
+        handleFiles(e.target.files);
+      });
+
+      // Drag and drop
+      uploadZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        uploadZone.classList.add("dragover");
+      });
+
+      uploadZone.addEventListener("dragleave", () => {
+        uploadZone.classList.remove("dragover");
+      });
+
+      uploadZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove("dragover");
+        handleFiles(e.dataTransfer.files);
+      });
+
+      // Handle selected files
+      function handleFiles(files) {
+        selectedFiles = Array.from(files);
+        displayFiles();
+        processBtn.disabled = selectedFiles.length === 0;
+      }
+
+      // Display selected files
+      function displayFiles() {
+        if (selectedFiles.length === 0) {
+          selectedFilesDiv.style.display = "none";
+          return;
+        }
+
+        selectedFilesDiv.style.display = "block";
+        fileCount.textContent = selectedFiles.length;
+        fileList.innerHTML = "";
+
+        selectedFiles.forEach((file, index) => {
+          const fileItem = document.createElement("div");
+          fileItem.className = "file-item";
+
+          const img = document.createElement("img");
+          img.src = URL.createObjectURL(file);
+          img.alt = file.name;
+
+          const filename = document.createElement("div");
+          filename.className = "filename";
+          filename.textContent = file.name;
+
+          const removeBtn = document.createElement("button");
+          removeBtn.className = "remove";
+          removeBtn.textContent = "×";
+          removeBtn.onclick = () => removeFile(index);
+
+          fileItem.appendChild(removeBtn);
+          fileItem.appendChild(img);
+          fileItem.appendChild(filename);
+          fileList.appendChild(fileItem);
+        });
+      }
+
+      // Remove file
+      function removeFile(index) {
+        selectedFiles.splice(index, 1);
+        displayFiles();
+        processBtn.disabled = selectedFiles.length === 0;
+      }
+
+      // Clear all
+      clearBtn.addEventListener("click", () => {
+        selectedFiles = [];
+        fileInput.value = "";
+        displayFiles();
+        processBtn.disabled = true;
+        results.classList.remove("active");
+        errorMsg.classList.remove("active");
+      });
+
+      // Process documents
+      processBtn.addEventListener("click", async () => {
+        if (selectedFiles.length === 0) return;
+
+        // Get webhook URL from input
+        const webhookUrl = webhookUrlInput.value.trim();
+        if (!webhookUrl) {
+          showError("Please enter a webhook URL");
+          return;
+        }
+
+        // Validate URL format
+        if (!isValidUrl(webhookUrl)) {
+          showError("Please enter a valid webhook URL");
+          return;
+        }
+
+        // Reset UI
+        errorMsg.classList.remove("active");
+        results.classList.remove("active");
+        loading.classList.add("active");
+
+        const startTime = Date.now();
+
+        try {
+          // Create FormData
+          const formData = new FormData();
+          selectedFiles.forEach((file) => {
+            formData.append("files", file);
+          });
+
+          // Send to n8n webhook with extended timeout (15 minutes)
+          const response = await fetchWithTimeout(
+            webhookUrl,
+            { method: "POST", body: formData },
+            REQUEST_TIMEOUT_MS
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+
+          const contentType = response.headers.get("content-type");
+
+          if (
+            contentType &&
+            contentType.includes("application/vnd.openxmlformats")
+          ) {
+            // Excel file received -> parse and show directly
+            const arrayBuffer = await response.arrayBuffer();
+            excelBlob = new Blob([arrayBuffer], {
+              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            });
+
+            const workbook = XLSX.read(arrayBuffer, { type: "array" });
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+            const normalized = rawRows.map(normalizeRecordFromExcel);
+            displayResults(normalized, startTime);
+          } else {
+            // JSON response
+            const data = await response.json();
+            displayResults(data, startTime);
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          showError(`Failed to process documents: ${error.message}`);
+          loading.classList.remove("active");
+        }
+      });
+
+      // Display results
+      function displayResults(data, startTime) {
+        loading.classList.remove("active");
+        results.classList.add("active");
+
+        // Calculate time
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        statTime.textContent = `${elapsed}s`;
+
+        const recordCount = Array.isArray(data) ? data.length : 0;
+        statRecords.textContent = recordCount;
+
+        // Calculate total sick days
+        let totalDays = 0;
+        if (Array.isArray(data)) {
+          totalDays = data.reduce((sum, record) => {
+            const days = parseInt(record.number_of_days) || 0;
+            return sum + days;
+          }, 0);
+        }
+        statDays.textContent = totalDays;
+
+        // Populate table
+        resultsBody.innerHTML = "";
+        if (Array.isArray(data)) {
+          data.forEach((record) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${record.patient_name || "N/A"}</td>
+              <td>${record.certificate_date || "N/A"}</td>
+              <td>${record.hospital_clinic || "N/A"}</td>
+              <td>${record.department || "N/A"}</td>
+              <td>${record.diagnosis || "N/A"}</td>
+              <td>${record.sick_leave_from || "N/A"}</td>
+              <td>${record.sick_leave_to || "N/A"}</td>
+              <td><strong>${record.number_of_days || "0"}</strong></td>
+              <td>${record.doctor_name || "N/A"}</td>
+              <td>${record.case_number || "N/A"}</td>
+            `;
+            resultsBody.appendChild(row);
+          });
+        }
+
+        // Show download button if we have an Excel blob
+        if (excelBlob) {
+          downloadBtn.style.display = "inline-block";
+        }
+      }
+
+      // Normalize Excel row to expected fields
+      function normalizeRecordFromExcel(row) {
+        // Lowercase keys for fuzzy matching
+        const lower = Object.fromEntries(
+          Object.entries(row).map(([k, v]) => [
+            String(k)
+              .toLowerCase()
+              .trim()
+              .replace(/[_\s]+/g, "_"),
+            v,
+          ])
+        );
+
+        const pick = (keywords) => {
+          for (const kw of keywords) {
+            for (const key in lower) {
+              if (key.includes(kw)) return lower[key];
+            }
+          }
+          return "";
+        };
+
+        return {
+          patient_name: pick(["patient", "name"]) || "",
+          certificate_date: pick(["certificate", "cert_date", "date"]) || "",
+          hospital_clinic: pick(["hospital", "clinic"]) || "",
+          department: pick(["department", "dept"]) || "",
+          diagnosis: pick(["diagnosis", "condition", "medical"]) || "",
+          sick_leave_from: pick(["from", "leave_from", "start"]) || "",
+          sick_leave_to: pick(["to", "leave_to", "end"]) || "",
+          number_of_days: parseInt(pick(["days", "number"]) || 0),
+          doctor_name: pick(["doctor", "physician"]) || "",
+          case_number: pick(["case", "number", "receipt"]) || "",
+        };
+      }
+
+      // Download Excel
+      downloadBtn.addEventListener("click", () => {
+        if (!excelBlob) {
+          showError("No Excel file available. Please process documents first.");
+          return;
+        }
+
+        const url = URL.createObjectURL(excelBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `sick_leave_records_${Date.now()}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+
+      // URL validation function
+      function isValidUrl(string) {
+        try {
+          const url = new URL(string);
+          return url.protocol === "http:" || url.protocol === "https:";
+        } catch (_) {
+          return false;
+        }
+      }
+
+      // Test webhook connection
+      testBtn.addEventListener("click", async () => {
+        const webhookUrl = webhookUrlInput.value.trim();
+
+        if (!webhookUrl) {
+          showError("Please enter a webhook URL first");
+          return;
+        }
+
+        if (!isValidUrl(webhookUrl)) {
+          showError("Please enter a valid webhook URL");
+          return;
+        }
+
+        testBtn.disabled = true;
+        testBtn.textContent = "🔄 Testing...";
+
+        try {
+          // Test with a simple GET request first
+          const response = await fetch(webhookUrl, {
+            method: "GET",
+            mode: "no-cors",
+          });
+
+          showSuccess(
+            "✅ Connection test successful! Webhook URL is reachable."
+          );
+        } catch (error) {
+          try {
+            const testFormData = new FormData();
+            testFormData.append("test", "connection");
+
+            await fetch(webhookUrl, {
+              method: "POST",
+              body: testFormData,
+              mode: "no-cors",
+            });
+
+            showSuccess(
+              "✅ Connection test successful! Webhook URL is reachable."
+            );
+          } catch (postError) {
+            showError(
+              `❌ Connection test failed. Please check your webhook URL.`
+            );
+          }
+        } finally {
+          testBtn.disabled = false;
+          testBtn.textContent = "🔗 Test Connection";
+        }
+      });
+
+      // Show success message
+      function showSuccess(message) {
+        errorMsg.style.background = "#2ecc71";
+        errorMsg.textContent = message;
+        errorMsg.classList.add("active");
+        setTimeout(() => {
+          errorMsg.classList.remove("active");
+          errorMsg.style.background = "#ff4757";
+        }, 3000);
+      }
+
+      // Show error
+      function showError(message) {
+        errorMsg.style.background = "#ff4757";
+        errorMsg.textContent = `❌ ${message}`;
+        errorMsg.classList.add("active");
+        setTimeout(() => {
+          errorMsg.classList.remove("active");
+        }, 5000);
+      }
+    </script>
+  </body>
+</html>
